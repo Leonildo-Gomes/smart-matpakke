@@ -1,0 +1,199 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+
+// criar uma migration: yarn prisma migrate dev
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String @map("password_hash")
+  dateOfBirth   DateTime? @map("date_of_birth")
+  gender        Gender?
+  photoUrl      String? @map("photo_url")
+  createdAt DateTime @default(now()) @map("create_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  family Family @relation(fields: [familyId], references: [id])
+  familyId String @map("family_id")
+  @@map("users")
+
+  usersPreferences UserPreference[]
+  recipeFeedbacks RecipeFeedback[]
+}
+
+
+model Family {
+  id            String    @id @default(uuid())
+  name          String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("families")
+  users User[]
+  weeklyPlans WeeklyPlan[]
+}
+
+model Preference {
+  id    String  @id @default(uuid())
+  type  PreferenceType
+  value String 
+  @@map("preferences")
+  usersPreferences UserPreference[]
+}
+
+model UserPreference {
+  user User @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+  preference Preference @relation(fields: [preferenceId],references: [id])
+  preferenceId String @map("preference_id")
+  @@unique([userId,preferenceId])
+  @@map("user_preferences")
+}
+
+
+model Recipe {
+  id    String  @id @default(uuid())
+  title String
+  description String
+  instructions String 
+  prepTimeMinutes Int @map("prep_time_minutes")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("recipes")
+  recipeIngredients RecipeIngredient[]
+  recipeNutrients RecipeNutrient[]
+  recipeFeedbacks RecipeFeedback[]
+  dailyPlans DailyPlan[]
+}
+
+model Ingredient {
+  id    String  @id @default(uuid())
+  name String @unique
+  
+  @@map("ingredients")
+  recipeIngredients RecipeIngredient[]
+}
+
+model RecipeIngredient {
+  id    String  @id @default(uuid())
+  quantity Float
+  unit String 
+  notes String?
+  recipe Recipe @relation( fields: [recipeId],references: [id])
+  recipeId String @map("recipe_id")
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id]) 
+  ingredientId String @map("ingredient_id")
+
+  @@map("recipe_ingredients")
+}
+
+model Nutrient {
+  id    String  @id @default(uuid())
+  name String @unique
+  unit NutrientUnit
+
+  @@map("nutrients")
+  recipeNutrients RecipeNutrient[]
+}
+model RecipeNutrient {
+  id    String  @id @default(uuid())
+  value Float
+  recipe Recipe @relation( fields: [recipeId],references: [id])
+  recipeId String @map("recipe_id")
+  nutrient Nutrient @relation( fields: [nutrientId],references: [id])
+  nutrientId String @map("nutrient_id")
+  @@map("recipe_nutrients")
+}
+
+model RecipeFeedback {
+  id String  @id @default(uuid())
+  rating Int
+  comment String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+  recipe Recipe @relation( fields: [recipeId],references: [id])
+  recipeId String @map("recipe_id")
+ 
+  @@map("recipe_feedbacks")
+}
+
+model WeeklyPlan {
+  id String  @id @default(uuid())
+  startDate DateTime @map("start_date")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  family Family @relation(fields: [familyId], references: [id])
+  familyId String @map("family_id")
+  
+  @@map("weekly_plans")
+  dailyPlans DailyPlan[]
+}
+
+model DailyPlan {
+  id String  @id @default(uuid())
+  dayOfWeek DayOfWeek @map("day_of_week")
+  weeklyPlan WeeklyPlan @relation(fields: [weeklyPlanId], references: [id])
+  weeklyPlanId String @map("weekly_plan_id")
+  recipe Recipe @relation( fields: [recipeId],references: [id])
+  recipeId String @map("recipe_id")
+
+  @@map("daily_plans")
+  
+}
+
+// Enum
+
+enum Gender {
+  MALE              @map("M")
+  FEMALE            @map("F")
+  OTHER             @map("O")
+  PREFER_NOT_TO_SAY @map("P")
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum NutrientUnit {
+  KILOGRAM  @map("kg")
+  GRAM @map("g")
+  MILLIGRAM @map("mg")
+  KILOCALORIE @map("kcal")
+  MILLILITER @map("ml")
+  LITER     @map("l")
+  TEASPOON  @map("tsp")
+  TABLESPOON @map("tbsp")
+  UNIT      @map("unit")
+}
+
+enum PreferenceType {
+  MATPAKKE_TYPE
+  DIET_STYLE
+  ALLERGY
+  INGREDIENT_AVOID
+}
+
