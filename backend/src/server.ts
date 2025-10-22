@@ -1,14 +1,12 @@
+import cors from '@fastify/cors';
+import fastifyJwt from '@fastify/jwt';
 import Fastify from 'fastify';
-
-
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { loginRoutes } from './modules/auth/login/login.routes';
 import { authRoutes } from './modules/auth/register/register.routes';
-
-
-import cors from '@fastify/cors';
-import fastifyJwt from '@fastify/jwt';
+import { ingredientRoutes } from './modules/ingredients/ingredient.routes';
+import { nutrientRoutes } from './modules/nutrients/nutrient.routes';
 import { preferenceRoutes } from './modules/preferences/preference.routes';
 import { userRoutes } from './modules/users/user.routes';
 import authPlugin from './plugins/auth';
@@ -42,6 +40,10 @@ app.register(loginRoutes, {prefix: '/api/auth'});
 app.register(userRoutes, {prefix: '/api/user'});
 // preferences
 app.register(preferenceRoutes, {prefix: '/api'});
+//ingredients
+app.register(ingredientRoutes, {prefix: '/api'});
+//Nutrients
+app.register(nutrientRoutes, {prefix: '/api'});
 
 console.log(process.env.PORT)
 app.listen({ port:Number(process.env.PORT) || 3333,host: '0.0.0.0'})

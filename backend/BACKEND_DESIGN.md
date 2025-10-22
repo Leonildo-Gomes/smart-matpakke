@@ -172,6 +172,11 @@ Prefixo de todas as rotas: `/api`
     -   **Autenticação:** Opcional (pode ser pública para mostrar opções).
     -   **Resposta (Sucesso 200):** `[{ "id": "uuid", "type": "enum", "value": "string" }]`
 
+-   **`GET /preferences/:id`**
+    -   **Descrição:** Retorna os detalhes de uma preferência específica.
+    -   **Autenticação:** Opcional.
+    -   **Resposta (Sucesso 200):** `{ "id": "uuid", "type": "enum", "value": "string" }`
+
 -   **`POST /preferences`**
     -   **Descrição:** Cria uma nova preferência.
     -   **Autenticação:** Obrigatória (Admin/Internal).
