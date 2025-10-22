@@ -6,9 +6,10 @@ import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod
 import { loginRoutes } from './modules/auth/login/login.routes';
 import { authRoutes } from './modules/auth/register/register.routes';
 
-import fastifyJwt from '@fastify/jwt';
 
 import cors from '@fastify/cors';
+import fastifyJwt from '@fastify/jwt';
+import { preferenceRoutes } from './modules/preferences/preference.routes';
 import { userRoutes } from './modules/users/user.routes';
 import authPlugin from './plugins/auth';
 
@@ -37,7 +38,10 @@ app.register(authPlugin);
 
 app.register(authRoutes, {prefix: '/api/auth'});
 app.register(loginRoutes, {prefix: '/api/auth'});
+//user
 app.register(userRoutes, {prefix: '/api/user'});
+// preferences
+app.register(preferenceRoutes, {prefix: '/api'});
 
 console.log(process.env.PORT)
 app.listen({ port:Number(process.env.PORT) || 3333,host: '0.0.0.0'})

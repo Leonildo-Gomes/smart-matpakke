@@ -17,3 +17,9 @@ export const registerResponseSchema = z.object({
     name: z.string(),
     email: z.string(),
 });
+export const errorResponseSchema = z.object({
+  message: z.string(),
+});
+
+
+

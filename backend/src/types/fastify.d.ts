@@ -1,4 +1,5 @@
 import 'fastify';
+import { preHandlerHookHandler } from 'fastify';
 import { JwtPayload as JsonwebtokenJwtPayload, SignOptions, VerifyOptions } from 'jsonwebtoken';
 
 declare module 'fastify' {
@@ -14,6 +15,7 @@ declare module 'fastify' {
   }
 
   interface FastifyInstance {
+    authenticate: preHandlerHookHandler;
     jwtVerify: <T = JsonwebtokenJwtPayload & { userId: string; name: string; email: string; }>(request: FastifyRequest, options?: VerifyOptions) => Promise<T>;
   }
 }

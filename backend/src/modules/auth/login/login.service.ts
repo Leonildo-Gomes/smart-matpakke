@@ -10,12 +10,14 @@ export async function loginService (input: LoginInput) {
             email: input.email
         }
     })
+    
 
     if (!user) {
         throw new InvalidCredentialsError();
     }
 
     const isPasswordValid = await compare(input.password, user.passwordHash)
+    console.log(isPasswordValid)
     if (!isPasswordValid) {
         throw new InvalidCredentialsError();
     }
