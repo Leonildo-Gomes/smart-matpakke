@@ -1,13 +1,14 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.js", 
+  "license": "ISC",
   "scripts": {
     "dev": "ts-node-dev -r dotenv/config --files src/server.ts"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+ 
   "description": "",
   "dependencies": {
     "@fastify/cors": "^11.1.0",
