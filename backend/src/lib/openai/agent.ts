@@ -1,0 +1,37 @@
+//import * as fs from 'fs';
+import OpenAI from "openai";
+//import * as path from 'path';
+import { buildSystemPrompt, buildUserPrompt } from "../../modules/plans/generate/plan.prompts";
+import { PlanGenerationContext } from "../../modules/plans/generate/plan.types";
+import { CustomError } from '../errors/custom.errors';
+const openaiClient = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY as string,
+    timeout: 5*60*1000,
+    logLevel: 'debug'
+}) 
+
+
+export async function generateText( planGenerationContext: PlanGenerationContext) {
+    //const matpakkeGuidelinesPath = path.join(__dirname, '..', '..', 'knowledge', 'matpakke_guidelines.md');
+    //const matpakkeGuidelines = fs.readFileSync(matpakkeGuidelinesPath, 'utf-8');
+    const data=  await openaiClient.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+            {role: "system", content: buildSystemPrompt()},
+            //{role: "system", content: buildDocsSystemPrompt(matpakkeGuidelines)},
+            {role: "user", content: buildUserPrompt(planGenerationContext)},
+        ],
+        temperature: 0.6,
+        stream: false
+    });
+
+    const message = data.choices[0]?.message.content;
+    console.log("messagem",message);
+    if (!message) {
+        throw new CustomError('No message returned from OpenAI', 500);
+    }
+    return message;
+    
+    
+}
+
