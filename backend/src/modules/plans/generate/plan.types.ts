@@ -16,4 +16,5 @@ export interface PlanGenerationContext {
     ingredientsToAvoid: string[];
   };
   planType: 'DAILY' | 'WEEKLY';
+  startDate: string;
 }

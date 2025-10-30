@@ -14,7 +14,7 @@ const openaiClient = new OpenAI({
 export async function generateText( planGenerationContext: PlanGenerationContext) {
     //const matpakkeGuidelinesPath = path.join(__dirname, '..', '..', 'knowledge', 'matpakke_guidelines.md');
     //const matpakkeGuidelines = fs.readFileSync(matpakkeGuidelinesPath, 'utf-8');
-    const data=  await openaiClient.chat.completions.create({
+    const stream =  await openaiClient.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
             {role: "system", content: buildSystemPrompt()},
@@ -22,11 +22,15 @@ export async function generateText( planGenerationContext: PlanGenerationContext
             {role: "user", content: buildUserPrompt(planGenerationContext)},
         ],
         temperature: 0.6,
-        stream: false
+        stream: true
     });
 
-    const message = data.choices[0]?.message.content;
-    console.log("messagem",message);
+    let message = '';
+    for await (const chunk of stream) {
+        message += chunk.choices[0]?.delta?.content || '';
+    }
+
+   
     if (!message) {
         throw new CustomError('No message returned from OpenAI', 500);
     }

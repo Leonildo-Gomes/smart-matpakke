@@ -5,7 +5,8 @@ import { DayOfWeek } from '../../../generated/prisma/client';
 const RecipeIngredientSchema = z.object({
   name: z.string().describe('Nome do ingrediente (ex: "Arroz", "Frango").'),
   quantity: z.number().positive().describe('Quantidade do ingrediente (ex: 100, 1.5).'),
-  unit: z.enum(['kg', 'g', 'mg', 'ml', 'l', 'tsp', 'tbsp', 'unit']).describe('Unidade de medida do ingrediente (ex: "g", "ml", "unidade").'),
+  //unit: z.enum(['kg', 'g', 'mg', 'ml', 'l', 'tsp', 'tbsp', 'unit']).describe('Unidade de medida do ingrediente (ex: "g", "ml", "unidade").'),
+  unit:z.string().describe('Unidade de medida do ingrediente (ex: "g", "ml", "unidade").'),
   notes: z.string().optional().describe('Notas adicionais sobre o ingrediente (ex: "cozido", "picado").'),
 });
 
@@ -13,7 +14,8 @@ const RecipeIngredientSchema = z.object({
 const RecipeNutrientSchema = z.object({
   name: z.string().describe('Nome do nutriente (ex: "Calorias", "Proteínas").'),
   value: z.number().positive().describe('Valor do nutriente (ex: 250, 30).'),
-  unit: z.enum(['kg', 'g', 'mg', 'kcal', 'ml', 'l', 'tsp', 'tbsp', 'unit']).describe('Unidade de medida do nutriente (ex: "kcal", "g").'),
+  unit: z.string().describe('Unidade de medida do nutriente (ex: "kcal", "g").'),
+  //unit: z.enum(['kg', 'g', 'mg', 'kcal', 'ml', 'l', 'tsp', 'tbsp', 'unit']).describe('Unidade de medida do nutriente (ex: "kcal", "g").'),
   //unit: z.enum(NutrientUnit).describe('Unidade de medida do nutriente (ex: "kcal", "g").'),
 });
 
@@ -34,23 +36,25 @@ const DailyPlanSchema = z.object({
 });
 
 // Schema para um Plano Semanal
-export const WeeklyPlanOutputSchema = z.object({
-  planType: z.literal('WEEKLY').describe('Tipo de plano: SEMANAL.'),
-  startDate: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).describe('Data de início do plano semanal no formato YYYY-MM-DD.'),
+export const PlanOutputSchema = z.object({
+  planType: z.enum(['DAILY', 'WEEKLY']).default('DAILY').describe('Tipo de plano: DIÁRIO ou SEMANAL.'),
+  startDate: z.string(),//.regex(/^\\d{4}-\\d{2}-\\d{2}$/).describe('Data de início do plano semanal no formato YYYY-MM-DD.'),
   dailyPlans: z.array(DailyPlanSchema).min(1).max(7).describe('Lista de planos diários para a semana.'),
 });
 
 // Schema para um Plano Diário (se a requisição for apenas para um dia)
 export const DailyPlanOutputSchema = z.object({
-  planType: z.literal('DAILY').describe('Tipo de plano: DIÁRIO.'),
+  //planType: z.literal('DAILY').describe('Tipo de plano: DIÁRIO.'),
   dayOfWeek: z.enum(DayOfWeek).describe('Dia da semana para o plano diário.'),
   recipe: RecipeSchema.describe('A receita principal para este dia.'),
 });
 
 // Schema principal que a IA deve retornar
-export const PlanOutputSchema = z.discriminatedUnion('planType', [
+/*export const PlanOutputSchema = z.discriminatedUnion('planType', [
   WeeklyPlanOutputSchema,
   DailyPlanOutputSchema,
-]);
+]);*/
+
+
 
 export type PlanOutput = z.infer<typeof PlanOutputSchema>;

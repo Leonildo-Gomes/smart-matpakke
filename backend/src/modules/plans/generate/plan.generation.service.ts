@@ -12,7 +12,7 @@ import { PlanGenerationContext } from "./plan.types";
 
 
  export async function generatePlanService(data: generatePlanSchema): Promise< PlanOutput> {
-  const  { userId, planType } = data;
+  const  { userId, planType, startDate } = data;
     const user= await prismaClient.user.findUnique({
         where: {
             id: userId
@@ -63,9 +63,11 @@ import { PlanGenerationContext } from "./plan.types";
       },
       preferences,
       planType,
+      startDate,
+      
     };
     const aiResponse= await generateText(planGenerate);
-    console.log('AI raw response:', aiResponse); // Uncommented for debugging
+    //console.log('AI raw response:', aiResponse); // Uncommented for debugging
     let aiResponseCleaned = aiResponse;
     const jsonStart = aiResponse.indexOf('```json');
     const jsonEnd = aiResponse.lastIndexOf('```');
@@ -73,7 +75,7 @@ import { PlanGenerationContext } from "./plan.types";
     if (jsonStart !== -1 && jsonEnd !== -1 && jsonStart < jsonEnd) {
       aiResponseCleaned = aiResponse.substring(jsonStart + 7, jsonEnd).trim();
     }
-    console.log('AI cleaned response:', aiResponseCleaned);
+    //console.log('AI cleaned response:', aiResponseCleaned);
     let parsedResponse: any;
 
     try {
@@ -90,10 +92,9 @@ import { PlanGenerationContext } from "./plan.types";
     }
     // Validate the parsed response against our Zod schema
 
+    
     const validationResult = PlanOutputSchema.safeParse(parsedResponse);
-
-
-
+   
     if (!validationResult.success) {
 
       console.error('AI response validation failed:', JSON.stringify(validationResult.error, null, 2)); // Log detailed Zod error
@@ -101,9 +102,6 @@ import { PlanGenerationContext } from "./plan.types";
       throw new CustomError('AI response did not match the expected schema.', 500);
 
     }
-
-    console.log('Generated and validated plan output:', validationResult.data);
-
     return validationResult.data;
    
   }

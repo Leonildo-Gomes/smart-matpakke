@@ -1,16 +1,16 @@
 
+import { CustomError } from "../../../lib/errors/custom.errors";
 import prismaClient from "../../../prisma";
-import { FeedbackInput, RemoveFeedbackInput } from "./feedback.schema";
+import { FeedbackInput } from "./feedback.schema"; // Remove RemoveFeedbackInput, pois não será mais usado diretamente
 
-
-
-export async function createFeedbackService(data: FeedbackInput) {
+// Função para criar um novo feedback
+export async function createFeedbackService(recipeId: string, userId: string, data: FeedbackInput) {
     const feedback = await prismaClient.recipeFeedback.create({
         data: {
             rating: data.rating,
             comment: data.comment ?? null,
-            recipeId: data.recipeId,
-            userId: data.userId,
+            recipeId: recipeId, // recipeId vem do parâmetro da rota
+            userId: userId,     // userId vem do token de autenticação
         },
         select: {
             id: true,
@@ -23,6 +23,7 @@ export async function createFeedbackService(data: FeedbackInput) {
     return feedback;
 }
 
+// Função para obter todos os feedbacks de uma receita
 export async function getFeedbacksByRecipe(recipeId: string) {
     const feedbacks = await prismaClient.recipeFeedback.findMany({
         where: {
@@ -39,12 +40,84 @@ export async function getFeedbacksByRecipe(recipeId: string) {
     return feedbacks;
 }
 
-export async function deleteFeedback(data: RemoveFeedbackInput) {
-    const feedbacks = await prismaClient.recipeFeedback.deleteMany({
+// Função para obter um feedback específico por ID
+export async function getFeedbackById(recipeId: string, feedbackId: string) {
+    const feedback = await prismaClient.recipeFeedback.findUnique({
         where: {
-            id: data.feedbackId,
-            userId: data.userId,
-        },    
+            id: feedbackId,
+            recipeId: recipeId, // Garante que o feedback pertence à receita
+        },
+        select: {
+            id: true,
+            rating: true,
+            comment: true,
+            recipeId: true,
+            userId: true,
+        },
     });
-    return feedbacks;
+    return feedback;
+}
+
+// Função para atualizar um feedback existente
+export async function updateFeedback(recipeId: string, feedbackId: string, userId: string, data: Partial<FeedbackInput>) {
+    // Verificar se o feedback existe e pertence ao usuário e à receita
+    const existingFeedback = await prismaClient.recipeFeedback.findUnique({
+        where: {
+            id: feedbackId,
+            recipeId: recipeId,
+            userId: userId, // Apenas o autor pode atualizar
+        },
+    });
+
+    if (!existingFeedback) {
+        throw new CustomError('Feedback not found or user not authorized to update this feedback.', 403);
+    }
+
+    const updatedFeedback = await prismaClient.recipeFeedback.update({
+        where: {
+            id: feedbackId,
+        },
+        data: {
+            ...(data.rating !== undefined && { rating: data.rating }),
+            ...(data.comment !== undefined && { comment: data.comment }),
+        },
+        select: {
+            id: true,
+            rating: true,
+            comment: true,
+            recipeId: true,
+            userId: true,
+        },
+    });
+    return updatedFeedback;
+}
+
+// Função para deletar um feedback
+export async function deleteFeedback(recipeId: string, feedbackId: string, userId: string) {
+    // Verificar se o feedback existe e pertence ao usuário e à receita
+    const existingFeedback = await prismaClient.recipeFeedback.findUnique({
+        where: {
+            id: feedbackId,
+            recipeId: recipeId,
+            userId: userId, // Apenas o autor pode deletar
+        },
+    });
+
+    if (!existingFeedback) {
+        throw new Error('Feedback not found or user not authorized to delete this feedback.');
+    }
+
+    const deletedFeedback = await prismaClient.recipeFeedback.delete({
+        where: {
+            id: feedbackId,
+        },
+        select: {
+            id: true,
+            rating: true,
+            comment: true,
+            recipeId: true,
+            userId: true,
+        },
+    });
+    return deletedFeedback;
 }

@@ -1,0 +1,318 @@
+
+{
+    "planType": "WEEKLY",
+    "startDate": "2025-11-03",
+    "dailyPlans": [
+        {
+            "dayOfWeek": "MONDAY",
+            "recipe": {
+                "title": "Wrap de Frango com Vegetais",
+                "description": "Um wrap saudável e saboroso, perfeito para um lanche.",
+                "instructions": "1. Cozinhe o peito de frango e desfie. 2. Espalhe o hummus na tortilla. 3. Adicione o frango desfiado, cenoura ralada e espinafre. 4. Enrole como um wrap e corte ao meio.",
+                "prepTimeMinutes": 15,
+                "ingredients": [
+                    {
+                        "name": "Peito de frango cozido",
+                        "quantity": 100,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Tortilla integral",
+                        "quantity": 1,
+                        "unit": "unit"
+                    },
+                    {
+                        "name": "Hummus",
+                        "quantity": 50,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Cenoura ralada",
+                        "quantity": 30,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Espinafre",
+                        "quantity": 20,
+                        "unit": "g"
+                    }
+                ],
+                "nutrients": [
+                    {
+                        "name": "Calorias",
+                        "value": 350,
+                        "unit": "kcal"
+                    },
+                    {
+                        "name": "Proteína",
+                        "value": 25,
+                        "unit": "g"
+                    }
+                ]
+            }
+        },
+        {
+            "dayOfWeek": "TUESDAY",
+            "recipe": {
+                "title": "Salada de Grão-de-Bico",
+                "description": "Uma salada rica em proteínas, ideal para um lanche nutritivo.",
+                "instructions": "1. Misture o grão-de-bico, tomate, pepino e cebola em uma tigela. 2. Regue com azeite e limão. 3. Tempere com sal e pimenta a gosto.",
+                "prepTimeMinutes": 10,
+                "ingredients": [
+                    {
+                        "name": "Grão-de-bico cozido",
+                        "quantity": 150,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Tomate",
+                        "quantity": 50,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Pepino",
+                        "quantity": 50,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Cebola roxa",
+                        "quantity": 20,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Azeite de oliva",
+                        "quantity": 10,
+                        "unit": "ml"
+                    },
+                    {
+                        "name": "Suco de limão",
+                        "quantity": 10,
+                        "unit": "ml"
+                    }
+                ],
+                "nutrients": [
+                    {
+                        "name": "Calorias",
+                        "value": 300,
+                        "unit": "kcal"
+                    },
+                    {
+                        "name": "Proteína",
+                        "value": 15,
+                        "unit": "g"
+                    }
+                ]
+            }
+        },
+        {
+            "dayOfWeek": "WEDNESDAY",
+            "recipe": {
+                "title": "Iogurte com Frutas e Granola",
+                "description": "Um lanche leve e doce, perfeito para qualquer hora do dia.",
+                "instructions": "1. Em um recipiente, coloque o iogurte. 2. Adicione as frutas picadas e a granola por cima. 3. Sirva imediatamente.",
+                "prepTimeMinutes": 5,
+                "ingredients": [
+                    {
+                        "name": "Iogurte natural",
+                        "quantity": 150,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Frutas variadas (morango, banana, etc.)",
+                        "quantity": 100,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Granola",
+                        "quantity": 30,
+                        "unit": "g"
+                    }
+                ],
+                "nutrients": [
+                    {
+                        "name": "Calorias",
+                        "value": 250,
+                        "unit": "kcal"
+                    },
+                    {
+                        "name": "Proteína",
+                        "value": 10,
+                        "unit": "g"
+                    }
+                ]
+            }
+        },
+        {
+            "dayOfWeek": "THURSDAY",
+            "recipe": {
+                "title": "Bolinhos de Batata Doce",
+                "description": "Bolinhos assados e saudáveis, fáceis de levar.",
+                "instructions": "1. Cozinhe e amasse a batata doce. 2. Misture com ovo, farinha de aveia e temperos. 3. Modele em bolinhos e asse a 180°C por 20 minutos.",
+                "prepTimeMinutes": 25,
+                "ingredients": [
+                    {
+                        "name": "Batata doce cozida",
+                        "quantity": 200,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Ovo",
+                        "quantity": 1,
+                        "unit": "unit"
+                    },
+                    {
+                        "name": "Farinha de aveia",
+                        "quantity": 50,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Sal",
+                        "quantity": 1,
+                        "unit": "tsp"
+                    },
+                    {
+                        "name": "Pimenta",
+                        "quantity": 1,
+                        "unit": "tsp"
+                    }
+                ],
+                "nutrients": [
+                    {
+                        "name": "Calorias",
+                        "value": 200,
+                        "unit": "kcal"
+                    },
+                    {
+                        "name": "Proteína",
+                        "value": 6,
+                        "unit": "g"
+                    }
+                ]
+            }
+        },
+        {
+            "dayOfWeek": "FRIDAY",
+            "recipe": {
+                "title": "Barras de Aveia e Banana",
+                "description": "Barras energéticas caseiras, perfeitas para um lanche rápido.",
+                "instructions": "1. Misture aveia, banana amassada e mel. 2. Pressione em uma forma e leve ao forno a 180°C por 15 minutos. 3. Corte em barras após esfriar.",
+                "prepTimeMinutes": 20,
+                "ingredients": [
+                    {
+                        "name": "Aveia",
+                        "quantity": 200,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Banana madura",
+                        "quantity": 2,
+                        "unit": "unit"
+                    },
+                    {
+                        "name": "Mel",
+                        "quantity": 30,
+                        "unit": "g"
+                    }
+                ],
+                "nutrients": [
+                    {
+                        "name": "Calorias",
+                        "value": 180,
+                        "unit": "kcal"
+                    },
+                    {
+                        "name": "Proteína",
+                        "value": 5,
+                        "unit": "g"
+                    }
+                ]
+            }
+        },
+        {
+            "dayOfWeek": "SATURDAY",
+            "recipe": {
+                "title": "Smoothie de Espinafre e Banana",
+                "description": "Um smoothie refrescante e nutritivo, ideal para começar o dia.",
+                "instructions": "1. Misture espinafre, banana, iogurte e leite no liquidificador até ficar homogêneo. 2. Sirva imediatamente.",
+                "prepTimeMinutes": 5,
+                "ingredients": [
+                    {
+                        "name": "Espinafre fresco",
+                        "quantity": 50,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Banana",
+                        "quantity": 1,
+                        "unit": "unit"
+                    },
+                    {
+                        "name": "Iogurte natural",
+                        "quantity": 100,
+                        "unit": "g"
+                    },
+                    {
+                        "name": "Leite (ou leite vegetal)",
+                        "quantity": 100,
+                        "unit": "ml"
+                    }
+                ],
+                "nutrients": [
+                    {
+                        "name": "Calorias",
+                        "value": 150,
+                        "unit": "kcal"
+                    },
+                    {
+                        "name": "Proteína",
+                        "value": 8,
+                        "unit": "g"
+                    }
+                ]
+            }
+        },
+        {
+            "dayOfWeek": "SUNDAY",
+            "recipe": {
+                "title": "Torrada de Abacate",
+                "description": "Uma torrada simples e deliciosa, perfeita para um lanche nutritivo.",
+                "instructions": "1. Toste o pão integral. 2. Amasse o abacate e espalhe sobre a torrada. 3. Tempere com sal e pimenta a gosto.",
+                "prepTimeMinutes": 10,
+                "ingredients": [
+                    {
+                        "name": "Pão integral",
+                        "quantity": 2,
+                        "unit": "unit"
+                    },
+                    {
+                        "name": "Abacate maduro",
+                        "quantity": 1,
+                        "unit": "unit"
+                    },
+                    {
+                        "name": "Sal",
+                        "quantity": 1,
+                        "unit": "tsp"
+                    },
+                    {
+                        "name": "Pimenta",
+                        "quantity": 1,
+                        "unit": "tsp"
+                    }
+                ],
+                "nutrients": [
+                    {
+                        "name": "Calorias",
+                        "value": 250,
+                        "unit": "kcal"
+                    },
+                    {
+                        "name": "Proteína",
+                        "value": 5,
+                        "unit": "g"
+                    }
+                ]
+            }
+        }
+    ]
+}

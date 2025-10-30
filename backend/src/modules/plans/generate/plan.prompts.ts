@@ -1,5 +1,4 @@
 import { Gender } from '../../../generated/prisma/client';
-import { PlanOutputSchema } from './plan.output.schema';
 import type { PlanGenerationContext } from './plan.types';
 
 /**
@@ -11,6 +10,7 @@ export function buildSystemPrompt(){
         `Sua tarefa é gerar um plano de refeições (diário ou semanal) e receitas detalhadas, adaptadas às necessidades e preferências de um utilizador específico.`,
         `Você deve considerar a idade, género, estilo de dieta, tipo de matpakke preferido, alergias e ingredientes a evitar do utilizador.`,
         `A sua resposta DEVE ser um objeto JSON válido, estritamente formatado de acordo com o schema que lhe será fornecido. Não inclua texto adicional antes ou depois do JSON.`,
+        `Nos campos numéricos, como 'quantity' e 'value', use sempre números decimais (por exemplo, 0.5 em vez de 1/2).`,
         `As receitas devem ser práticas para o dia-a-dia e adequadas para serem transportadas como matpakke.`,
         `Priorize ingredientes frescos e sazonais, e forneça instruções claras e concisas.`,
         `Certifique-se de que o plano de refeições é nutricionalmente equilibrado e variado.`,
@@ -18,10 +18,11 @@ export function buildSystemPrompt(){
 }
 
 export function buildUserPrompt(context: PlanGenerationContext){
-    const { user, preferences, planType } = context;
+    const { user, preferences, planType, startDate } = context;
 
     const promptParts: string[] = [
         `Por favor, gera um plano de lanches ${planType === 'DAILY' ? 'diário' : 'semanal'} para mim.`,
+        `Se o plano de lanches for ${planType === 'DAILY' ? `deve gerar umplano para a data ${startDate} ` : `deve gerar um plano para a semana a partir da data ${startDate}`}.`,
         `Aqui estão os meus detalhes e preferências:`,
         `- Idade: ${user.age} anos`,
         `- Género: ${user.gender === Gender.MALE ? 'Masculino' : user.gender === Gender.FEMALE ? 'Feminino' : 'Não especificado'} `,
@@ -39,61 +40,40 @@ export function buildUserPrompt(context: PlanGenerationContext){
     if (preferences.ingredientsToAvoid.length > 0) {
         promptParts.push(`- Ingredientes a Evitar: ${preferences.ingredientsToAvoid.join(', ')}`);
     }
-
+    
+    
     promptParts.push(
         `\nPor favor, retorna o plano de refeições e as receitas num formato JSON estrito, seguindo o seguinte schema:`,
         `'''json
 {
-  "planType": "DAILY" | "WEEKLY",
-  "dayOfWeek"?: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY", // Apenas para DAILY
-  "startDate"?: "YYYY-MM-DD", // Apenas para WEEKLY
-  "recipe"?: { // Apenas para DAILY
-    "title": "string",
-    "description": "string",
-    "instructions": "string",
-    "prepTimeMinutes": "number",
-    "ingredients": [
-      {
-        "name": "string",
-        "quantity": "number",
-        "unit": "kg" | "g" | "mg" | "ml" | "l" | "tsp" | "tbsp" | "unit",
-        "notes"?: "string"
+    planType: "DAILY" | "WEEKLY";
+    startDate: string;
+    dailyPlans:[
+     {
+        dayOfWeek: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+        recipe: {
+            title: string;
+            description: string;
+            instructions: string;
+            prepTimeMinutes: number;
+            ingredients: [
+              {
+                name: string;
+                quantity: number;
+                unit: string;
+                notes?: string | undefined;
+              }
+            ];
+            nutrients?:[
+             {
+                name: string;
+                value: number;
+                unit: "kg" | "g" | "mg" | "kcal" | "ml" | "l" | "tsp" | "tbsp" | "unit";
+              }
+            ] | undefined;
+        };
       }
-    ],
-    "nutrients"?: [
-      {
-        "name": "string",
-        "value": "number",
-        "unit": "kcal" | "g" | "mg"
-      }
-    ]
-  },
-  "dailyPlans"?: [ // Apenas para WEEKLY
-    {
-      "dayOfWeek": "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY",
-      "recipe": {
-        "title": "string",
-        "description": "string",
-        "instructions": "string",
-        "prepTimeMinutes": "number",
-        "ingredients": [
-          {
-            "name": "string",
-            "quantity": "number",
-            "unit": "kg" | "g" | "mg" | "ml" | "l" | "tsp" | "tbsp" | "unit",
-            "notes"?: "string"
-          }
-        ],
-        "nutrients"?: [
-          {
-            "name": "string",
-            "value": "number",
-            "unit": "kcal" | "g" | "mg"
-          }
-        ]
-      }
-    }
-  ]
+    ];
 }
 '''`
     );
