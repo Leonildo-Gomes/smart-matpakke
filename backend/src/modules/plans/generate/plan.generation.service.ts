@@ -1,10 +1,10 @@
 
-import { Gender, PreferenceType } from "../../../generated/prisma/client";
+import { Gender, NutrientUnit, PreferenceType } from "../../../generated/prisma/client";
 import { CustomError } from "../../../lib/errors/custom.errors";
 import { generateText } from "../../../lib/openai/agent";
 import prismaClient from "../../../prisma";
 import { PlanOutput, PlanOutputSchema } from "./plan.output.schema";
-import { generatePlanSchema } from "./plan.schema";
+import { generatePlanSchema, WeeklyPlanResponseSchema } from "./plan.schema";
 import { PlanGenerationContext } from "./plan.types";
 
 
@@ -117,344 +117,173 @@ import { PlanGenerationContext } from "./plan.types";
     return age;
   }
 
-/*
-export class PlanGenerationService {
-  constructor(private prisma: typeof prismaClient) {}
+/**
+ * Helper function to map AI string units to our NutrientUnit enum.
+ * This provides a safety layer against unexpected AI output.
+ * @param unit The unit string from the AI (e.g., "grams", "kcal").
+ * @returns The corresponding NutrientUnit enum value.
+ */
+function normalizeNutrientUnit(unit: string): NutrientUnit {
+  const lowerUnit = unit.toLowerCase().trim();
 
-  private calculateAge(dateOfBirth: Date): number {
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+  switch (lowerUnit) {
+    case 'kg':
+    case 'kilogram':
+    case 'kilograms':
+      return NutrientUnit.KILOGRAM;
+    case 'g':
+    case 'gram':
+    case 'grams':
+      return NutrientUnit.GRAM;
+    case 'mg':
+    case 'milligram':
+    case 'milligrams':
+      return NutrientUnit.MILLIGRAM;
+    case 'kcal':
+    case 'calorie':
+    case 'calories':
+      return NutrientUnit.KILOCALORIE;
+    case 'ml':
+    case 'milliliter':
+    case 'milliliters':
+      return NutrientUnit.MILLILITER;
+    case 'l':
+    case 'liter':
+    case 'liters':
+      return NutrientUnit.LITER;
+    case 'tsp':
+    case 'teaspoon':
+    case 'teaspoons':
+      return NutrientUnit.TEASPOON;
+    case 'tbsp':
+    case 'tablespoon':
+    case 'tablespoons':
+      return NutrientUnit.TABLESPOON;
+    case 'unit':
+    case 'units':
+      return NutrientUnit.UNIT;
+    default:
+      // If the unit is unknown, log a warning and default to 'UNIT'.
+      console.warn(`Unknown nutrient unit '${unit}', defaulting to 'UNIT'.`);
+      return NutrientUnit.UNIT;
   }
+}
 
-  async getPlanGenerationContext(userId: string, planType: 'DAILY' | 'WEEKLY'): Promise<PlanGenerationContext> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        usersPreferences: {
-          include: {
-            preference: true,
+export async function saveGeneratedPlanService(userId : string, plan : PlanOutput) {
+    const user = await prismaClient.user.findUnique({
+        where: {
+            id: userId
+        },
+        select: {
+            id: true,
+            familyId: true
+        }
+    })
+    if (!user) {
+        throw new CustomError('User or family not found', 404);
+    }
+
+    return prismaClient.$transaction( async (prisma)=>{
+      // 1. Create new weekly plan
+      const weeklyPlan = await prisma.weeklyPlan.create({
+        data: {
+          startDate: new Date(plan.startDate),
+          familyId: user.familyId,
+        },
+      });
+
+      //process each daily pla from the Ai ouput
+      for (const dailyPlan of plan.dailyPlans) {
+        const {recipe: recipeData} = dailyPlan;
+        const ingredientUpserts= recipeData.ingredients.map((ingredient) =>
+          prisma.ingredient.upsert({
+            where :{name: ingredient.name},
+            update: {},
+            create: {
+              name: ingredient.name
+            }
+          }) 
+        );
+        const nutrientUpserts= recipeData.nutrients?.map((nutrient) =>
+          prisma.nutrient.upsert({
+            where :{name: nutrient.name},
+            update: {},
+            create: {
+              name: nutrient.name,
+              unit: normalizeNutrientUnit(nutrient.unit),
+            }
+            
+          })
+        )
+        const createdIngredients = await Promise.all(ingredientUpserts);
+        const createdNutrients = await Promise.all(nutrientUpserts || []); 
+
+        // Map names to IDs for easy lookup
+        const ingredientIdMap = new Map(createdIngredients.map((i) => [i.name, i.id]));
+        const nutrientIdMap = new Map(createdNutrients.map((n) => [n.name, n.id]));
+
+        // create recipe
+        const newRecipe= await prisma.recipe.create({
+          data: {
+            title:recipeData.title,
+            description: recipeData.description,
+            instructions: recipeData.instructions,
+            prepTimeMinutes: recipeData.prepTimeMinutes,
+          }
+        });
+        // create recipe ingredients
+        const recipeIngredients = recipeData.ingredients.map((ingredient) => ({
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          notes: ingredient.notes || null,
+          recipeId: newRecipe.id,
+          ingredientId: ingredientIdMap.get(ingredient.name)!,
+        }));
+        await prisma.recipeIngredient.createMany({
+          data: recipeIngredients,
+        });
+        // create recipe nutrients
+        const recipeNutrients = recipeData.nutrients?.map((nutrient) => ({
+          value: nutrient.value,
+          recipeId: newRecipe.id,
+          nutrientId: nutrientIdMap.get(nutrient.name)!,
+        }));
+        await prisma.recipeNutrient.createMany({
+          data: recipeNutrients || [],
+        });
+        // 5. Create new daily plan
+        await prisma.dailyPlan.create({
+          data: {
+            dayOfWeek: dailyPlan.dayOfWeek,
+            recipeId: newRecipe.id,
+            weeklyPlanId: weeklyPlan.id,
+          },
+        });
+      } 
+      const newPlna=  await prisma.weeklyPlan.findUnique({
+        where: {
+          id: weeklyPlan.id,
+        },
+        include: {
+          dailyPlans: {
+            include: {
+              recipe: {
+                include: {
+                  recipeIngredients: { include: { ingredient: true } },
+                  recipeNutrients: { include: { nutrient: true } },
+                },
+              },
+            },
           },
         },
-      },
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    if (!user.dateOfBirth) {
-      throw new Error('User date of birth is required for plan generation');
-    }
-    const age = this.calculateAge(user.dateOfBirth);
-
-
-
-    const preferences: PlanGenerationContext['preferences'] = {
-      matpakkeType: [],
-      dietStyle: [],
-      allergies: [],
-      ingredientsToAvoid: [],
-    };
-
-    user.usersPreferences.forEach((up: any) => {
-      switch (up.preference.type) {
-        case PreferenceType.MATPAKKE_TYPE:
-          preferences.matpakkeType.push(up.preference.value);
-          break;
-        case PreferenceType.DIET_STYLE:
-          preferences.dietStyle.push(up.preference.value);
-          break;
-        case PreferenceType.ALLERGY:
-          preferences.allergies.push(up.preference.value);
-          break;
-        case PreferenceType.INGREDIENT_AVOID:
-          preferences.ingredientsToAvoid.push(up.preference.value);
-          break;
+      });
+      console.log('newPlna::::',newPlna);
+      const validationResult = WeeklyPlanResponseSchema.safeParse(newPlna);
+      if (!validationResult.success) {
+        // AQUI: O erro é lançado porque a validação falhou
+        console.error('AI response validation failed:', JSON.stringify(validationResult.error, null, 2)); 
+        throw new CustomError('AI response did not match the expected schema.', 500);
       }
-    });
-
-    return {
-      user: {
-        age,
-        gender: user.gender || "P", // Default to Prefer_Not_To_Say if not set
-      },
-      family: {
-        numberOfMembers: 1, // For now, always 1 as family feature is future
-      },
-      preferences,
-      planType,
-    };
-  }
-
-  async generatePlan(data:generatePlanSchema): Promise<any> {
-    const context = await this.getPlanGenerationContext(data.userId, data.planType);
-    // TODO: Build prompt using context and call AI
-    console.log('Generated context:', context);
-    return { message: 'Plan generation initiated (AI call pending)', context };
-  }
-}*/
-
- 
-
-
-
-
-
-
-
-
-
-
-/*import { PrismaClient } from '@prisma/client';
-
-import { PlanGenerationContext } from './plan.types';
-
-import { Gender, PreferenceType } from '../../../generated/prisma/client';
-
-import { buildDocsSystemPrompt, buildSystemPrompt, buildUserPrompt } from './plan.prompts';
-
-import { generateText } from '../../../lib/openai/agent';
-
-import { PlanOutput, PlanOutputSchema } from './plan.output.schema';
-
-import { CustomError } from '../../../lib/errors/custom.errors';
-
-import * as fs from 'fs';
-
-import * as path from 'path';
-
-
-
-export class PlanGenerationService {
-
-  constructor(private prisma: PrismaClient) {}
-
-
-
-  private calculateAge(dateOfBirth: Date): number {
-
-    const today = new Date();
-
-    const birthDate = new Date(dateOfBirth);
-
-    let age = today.getFullYear() - birthDate.getFullYear();
-
-    const m = today.getMonth() - birthDate.getMonth();
-
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-
-      age--;
-
-    }
-
-    return age;
-
-  }
-
-
-
-  async getPlanGenerationContext(userId: string, planType: 'DAILY' | 'WEEKLY'): Promise<PlanGenerationContext> {
-
-    const user = await this.prisma.user.findUnique({
-
-      where: { id: userId },
-
-      include: {
-
-        usersPreferences: {
-
-          include: {
-
-            preference: true,
-
-          },
-
-        },
-
-      },
-
-    });
-
-
-
-    if (!user) {
-
-      throw new CustomError('User not found', 404);
-
-    }
-
-
-
-    if (!user.dateOfBirth) {
-
-      throw new CustomError('User date of birth is required for plan generation', 400);
-
-    }
-
-
-
-    const age = this.calculateAge(user.dateOfBirth);
-
-
-
-    const preferences: PlanGenerationContext['preferences'] = {
-
-      matpakkeType: [],
-
-      dietStyle: [],
-
-      allergies: [],
-
-      ingredientsToAvoid: [],
-
-    };
-
-
-
-    user.usersPreferences.forEach((up: any) => {
-
-      switch (up.preference.type) {
-
-        case PreferenceType.MATPAKKE_TYPE:
-
-          preferences.matpakkeType.push(up.preference.value);
-
-          break;
-
-        case PreferenceType.DIET_STYLE:
-
-          preferences.dietStyle.push(up.preference.value);
-
-          break;
-
-        case PreferenceType.ALLERGY:
-
-          preferences.allergies.push(up.preference.value);
-
-          break;
-
-        case PreferenceType.INGREDIENT_AVOID:
-
-          preferences.ingredientsToAvoid.push(up.preference.value);
-
-          break;
-
-      }
-
-    });
-
-
-
-    return {
-
-      user: {
-
-        age,
-
-        gender: user.gender || Gender.PREFER_NOT_TO_SAY, // Default to Prefer_Not_To_Say if not set
-
-      },
-
-      family: {
-
-        numberOfMembers: 1, // For now, always 1 as family feature is future
-
-      },
-
-      preferences,
-
-      planType,
-
-    };
-
-  }
-
-
-
-  async generatePlan(userId: string, planType: 'DAILY' | 'WEEKLY'): Promise<PlanOutput> {
-
-    const context = await this.getPlanGenerationContext(userId, planType);
-
-
-
-    // Read matpakke guidelines
-
-    const matpakkeGuidelinesPath = path.join(__dirname, '..', '..', '..', 'knowledge', 'matpakke_guidelines.md');
-
-    const matpakkeGuidelines = fs.readFileSync(matpakkeGuidelinesPath, 'utf-8');
-
-
-
-    const systemPrompt = buildSystemPrompt();
-
-    const docsSystemPrompt = buildDocsSystemPrompt(matpakkeGuidelines);
-
-    const userPrompt = buildUserPrompt(context);
-
-
-
-    const aiResponse = await generateText(context);
-
-
-
-    // Attempt to parse the AI's response as JSON
-
-    let parsedResponse: any;
-
-    try {
-
-      parsedResponse = JSON.parse(aiResponse);
-
-    } catch (error) {
-
-      console.error('Failed to parse AI response as JSON:', aiResponse);
-
-      throw new CustomError('AI did not return a valid JSON response.', 500);
-
-    }
-
-
-
-    // Validate the parsed response against our Zod schema
-
-    const validationResult = PlanOutputSchema.safeParse(parsedResponse);
-
-
-
-    if (!validationResult.success) {
-
-      console.error('AI response validation failed:', validationResult.error);
-
-      throw new CustomError('AI response did not match the expected schema.', 500);
-
-    }
-
-
-
-    const planOutput = validationResult.data;
-
-
-
-    // --- Save to Database --- //
-
-    // This part will be complex and depends on whether it's a daily or weekly plan.
-
-    // For now, we'll return the validated output.
-
-    // TODO: Implement actual database saving logic here.
-
-
-
-    console.log('Generated and validated plan output:', planOutput);
-
-    return planOutput;
-
-  }
-
-}*/
+      return validationResult;
+    })
+}

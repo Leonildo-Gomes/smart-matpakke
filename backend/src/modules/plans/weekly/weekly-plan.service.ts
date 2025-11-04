@@ -8,7 +8,7 @@ export async function createWeeklyPlanService(data: CreateWeeklyPlanInput, famil
 
     const weeklyPlan= await prismaClient.weeklyPlan.create({
         data: {
-            startDate: data.startDate,
+            startDate: new Date(data.startDate),
             familyId: familyId, // Use the argument here
             dailyPlans: {
                 create: data.dailyPlans.map((dailyPlan) => ({
