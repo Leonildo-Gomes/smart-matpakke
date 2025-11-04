@@ -7,7 +7,7 @@ Este documento serve como um guia para garantir que a colaboração entre os des
 Para que o Gemini possa ajudar de forma eficaz, é crucial ter sempre em mente o seguinte contexto:
 
 -   **Nome do Projeto:** Smart Matpakke
--   **Objetivo:** Uma aplicação para gerar planos de refeições semanais (matpakke) de forma inteligente e personalizada para utilizadores individuais e famílias.
+-   **Objetivo:** Uma aplicação para gerar planos de lanches diarios/semanais (matpakke) de forma inteligente e personalizada para utilizadores individuais e famílias.
 -   **Stack Tecnológica:**
     -   **Backend:** Node.js com Fastify e TypeScript
     -   **ORM:** Prisma

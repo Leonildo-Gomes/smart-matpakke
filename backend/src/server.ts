@@ -5,6 +5,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { loginRoutes } from './modules/auth/login/login.routes';
 import { authRoutes } from './modules/auth/register/register.routes';
+import { familyRoutes } from './modules/families/family.routes';
 import { ingredientRoutes } from './modules/ingredients/ingredient.routes';
 import { nutrientRoutes } from './modules/nutrients/nutrient.routes';
 import { planRoutes } from './modules/plans/generate/plan.routes';
@@ -51,6 +52,9 @@ app.register(nutrientRoutes, {prefix: '/api'});
 app.register(recipeRoutes, {prefix: '/api'});
 //plan AI
 app.register(planRoutes, {prefix: '/api'})
+
+//families
+app.register(familyRoutes, {prefix: '/api'})
 
 console.log(process.env.PORT)
 app.listen({ port:Number(process.env.PORT) || 3333,host: '0.0.0.0'})

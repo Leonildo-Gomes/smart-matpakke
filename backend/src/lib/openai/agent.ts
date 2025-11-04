@@ -1,7 +1,6 @@
-//import * as fs from 'fs';
+import * as fs from 'fs';
 import OpenAI from "openai";
-//import * as path from 'path';
-import { buildSystemPrompt, buildUserPrompt } from "../../modules/plans/generate/plan.prompts";
+import { buildDocsSystemPrompt, buildSystemPrompt, buildUserPrompt } from "../../modules/plans/generate/plan.prompts";
 import { PlanGenerationContext } from "../../modules/plans/generate/plan.types";
 import { CustomError } from '../errors/custom.errors';
 const openaiClient = new OpenAI({
@@ -12,13 +11,12 @@ const openaiClient = new OpenAI({
 
 
 export async function generateText( planGenerationContext: PlanGenerationContext) {
-    //const matpakkeGuidelinesPath = path.join(__dirname, '..', '..', 'knowledge', 'matpakke_guidelines.md');
-    //const matpakkeGuidelines = fs.readFileSync(matpakkeGuidelinesPath, 'utf-8');
+    const matpakkeGuidelines=fs.readFileSync('knowledge/matpakke_guidelines.md', 'utf-8');
     const stream =  await openaiClient.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
             {role: "system", content: buildSystemPrompt()},
-            //{role: "system", content: buildDocsSystemPrompt(matpakkeGuidelines)},
+            {role: "system", content: buildDocsSystemPrompt(matpakkeGuidelines)},
             {role: "user", content: buildUserPrompt(planGenerationContext)},
         ],
         temperature: 0.6,
