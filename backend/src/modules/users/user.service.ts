@@ -9,10 +9,8 @@ export async function getUserProfile(userId: string) {
         where: { id: userId },
         select: { // Select specific fields to return
             id: true,
-            name: true,
             email: true,
-            dateOfBirth: true,
-            familyId: true,
+           
         },
     });
 
@@ -48,11 +46,7 @@ export async function updateUserProfile(userId: string, data: UpdateUserProfileI
         data: updateData,
         select: {
             id: true,
-            name: true,
             email: true,
-            dateOfBirth: true,
-            familyId: true,
-            gender: true, // Include gender in select if it's part of the response schema
         },
     });
     if (!user) {

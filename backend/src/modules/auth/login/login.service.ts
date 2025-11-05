@@ -8,6 +8,9 @@ export async function loginService (input: LoginInput) {
     const user = await prismaClient.user.findUnique({
         where: {
             email: input.email
+        },
+        include: {
+            familyMember: true
         }
     })
     
@@ -23,7 +26,7 @@ export async function loginService (input: LoginInput) {
     }
     return {
         userId: user.id,
-        name: user.name,
+        name: user.familyMember?.name,
         email: user.email
     }
 

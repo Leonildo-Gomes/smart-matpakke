@@ -18,10 +18,12 @@ import { PlanGenerationContext } from "./plan.types";
             id: userId
         },
         include: {
-            usersPreferences: {
-                include: {
-                    preference: true,
+            familyMembers: {
+              include: {
+                familyMenberPreferences:{
+                  include:{preference: true},
                 },
+              }    
             },
         },
     })
@@ -30,10 +32,10 @@ import { PlanGenerationContext } from "./plan.types";
     if (!user) {
         throw new CustomError('User not found', 404);
     }
-    if (!user.dateOfBirth) {
+    if (!user.familyMembers || !user.familyMembers[0]?.dateOfBirth) {
       throw new CustomError('User date of birth is required for plan generation');
     }
-    const age = calculateAge(user.dateOfBirth);
+    const age = calculateAge(user.familyMembers[0].dateOfBirth);
 
     const preferences: PlanGenerationContext['preferences'] = {
       matpakkeType: [],
@@ -42,7 +44,7 @@ import { PlanGenerationContext } from "./plan.types";
       ingredientsToAvoid: [],
     };
 
-    user.usersPreferences.forEach((preference) => {
+    user.familyMembers[0].familyMenberPreferences.forEach((preference) => {
       if (preference.preference.type === PreferenceType.MATPAKKE_TYPE) {
         preferences.matpakkeType.push(preference.preference.value);
       } else if (preference.preference.type === PreferenceType.DIET_STYLE) {
@@ -56,7 +58,7 @@ import { PlanGenerationContext } from "./plan.types";
     const planGenerate: PlanGenerationContext = {
       user: {
         age: age,
-        gender: user.gender || Gender.PREFER_NOT_TO_SAY,
+        gender: user.familyMembers[0].gender || Gender.PREFER_NOT_TO_SAY,
       },
       family: {
         numberOfMembers: 1,
@@ -176,7 +178,7 @@ export async function saveGeneratedPlanService(userId : string, plan : PlanOutpu
         },
         select: {
             id: true,
-            familyId: true
+            familyMembers: true
         }
     })
     if (!user) {
@@ -188,7 +190,7 @@ export async function saveGeneratedPlanService(userId : string, plan : PlanOutpu
       const weeklyPlan = await prisma.weeklyPlan.create({
         data: {
           startDate: new Date(plan.startDate),
-          familyId: user.familyId,
+          familyId: user.familyMembers[0]?.familyId,
         },
       });
 

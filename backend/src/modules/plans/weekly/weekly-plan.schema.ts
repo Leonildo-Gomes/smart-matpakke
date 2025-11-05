@@ -5,10 +5,12 @@ import { DayOfWeek } from '../../../generated/prisma/client';
 const dailyPlanSchema = z.object({
     dayOfWeek: z.enum(DayOfWeek),
     recipeId: z.string().uuid(),
+    familyMemberId: z.string().describe('ID do membro da família para o plano diário.'),
 })
 export const createWeeklyPlanSchema = z.object({
     startDate: z.coerce.date(),
     dailyPlans: z.array(dailyPlanSchema),
+    
 });
 
 

@@ -21,31 +21,45 @@ datasource db {
 
 model User {
   id            String    @id @default(uuid())
-  name          String
   email         String    @unique
   passwordHash  String @map("password_hash")
+  createdAt DateTime @default(now()) @map("create_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+ 
+  @@map("users")
+  familyMember FamilyMember?
+}
+
+model FamilyMember{
+  id            String    @id @default(uuid())
+  name          String
   dateOfBirth   DateTime? @map("date_of_birth")
   gender        Gender?
   photoUrl      String? @map("photo_url")
+  status Status
   createdAt DateTime @default(now()) @map("create_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
+
   family Family @relation(fields: [familyId], references: [id])
   familyId String @map("family_id")
-  @@map("users")
-
-  usersPreferences UserPreference[]
+  account   User?   @relation(fields: [accountId], references: [id])
+  accountId String? @unique @map("account_id") 
+  
+  
+  @@map("family_members")
+  dailyPlans DailyPlan[]
+  familyMenberPreferences FamilyMemberPreference[]
   recipeFeedbacks RecipeFeedback[]
 }
 
-
 model Family {
   id            String    @id @default(uuid())
-  name          String?
+  name          String
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@map("families")
-  users User[]
+  familyMembers FamilyMember[]
   weeklyPlans WeeklyPlan[]
 }
 
@@ -54,16 +68,16 @@ model Preference {
   type  PreferenceType
   value String 
   @@map("preferences")
-  usersPreferences UserPreference[]
+  familyMenberPreferences FamilyMemberPreference[]
 }
 
-model UserPreference {
-  user User @relation(fields: [userId], references: [id])
-  userId String @map("user_id")
+model FamilyMemberPreference {
+  familyMember   FamilyMember @relation(fields: [familyMemberId], references: [id])                                  
+  familyMemberId String       @map("family_member_id")
   preference Preference @relation(fields: [preferenceId],references: [id])
   preferenceId String @map("preference_id")
-  @@unique([userId,preferenceId])
-  @@map("user_preferences")
+  @@unique([familyMemberId,preferenceId])
+  @@map("family_member_preferences")
 }
 
 
@@ -127,8 +141,8 @@ model RecipeFeedback {
   comment String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  user User @relation(fields: [userId], references: [id])
-  userId String @map("user_id")
+  familyMember   FamilyMember @relation(fields: [familyMemberId], references: [id])                                  
+  familyMemberId String       @map("family_member_id")
   recipe Recipe @relation( fields: [recipeId],references: [id])
   recipeId String @map("recipe_id")
  
@@ -148,14 +162,17 @@ model WeeklyPlan {
 }
 
 model DailyPlan {
-  id String  @id @default(uuid())
-  dayOfWeek DayOfWeek @map("day_of_week")
-  weeklyPlan WeeklyPlan @relation(fields: [weeklyPlanId], references: [id])
-  weeklyPlanId String @map("weekly_plan_id")
-  recipe Recipe @relation( fields: [recipeId],references: [id])
-  recipeId String @map("recipe_id")
+  id String      @id @default(uuid())
+  dayOfWeek      DayOfWeek @map("day_of_week")
+  weeklyPlan     WeeklyPlan @relation(fields: [weeklyPlanId], references: [id])
+  weeklyPlanId   String @map("weekly_plan_id")
+  recipe         Recipe @relation( fields: [recipeId],references: [id])
+  recipeId       String @map("recipe_id")
+  familyMember   FamilyMember @relation(fields: [familyMemberId], references: [id])                                  
+  familyMemberId String  @map("family_member_id")
 
   @@map("daily_plans")
+  @@unique([weeklyPlanId, dayOfWeek, familyMemberId])
   
 }
 
@@ -197,3 +214,7 @@ enum PreferenceType {
   INGREDIENT_AVOID
 }
 
+enum Status {
+  ACTIVE @map("1")
+  INACTIVE @map("0")
+}

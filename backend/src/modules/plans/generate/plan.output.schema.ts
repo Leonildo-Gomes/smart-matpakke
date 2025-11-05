@@ -33,6 +33,7 @@ const RecipeSchema = z.object({
 const DailyPlanSchema = z.object({
   dayOfWeek: z.enum(DayOfWeek).describe('Dia da semana para o plano diário.'),
   recipe: RecipeSchema.describe('A receita principal para este dia.'),
+  
 });
 
 // Schema para um Plano Semanal

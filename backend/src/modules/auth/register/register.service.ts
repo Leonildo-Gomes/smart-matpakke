@@ -1,4 +1,5 @@
 import { hash } from 'bcryptjs';
+import { Status } from '../../../generated/prisma';
 import prismaClient from '../../../prisma';
 import type { RegisterInput } from './register.schema';
 export async function registerService (input: RegisterInput) {
@@ -17,19 +18,29 @@ export async function registerService (input: RegisterInput) {
 
     const user = await prismaClient.user.create({
         data: {
-            name: input.name,
             email: input.email,
             passwordHash: hashedPassword,
-            family: {
+            familyMember: {
                 create: {
-                    name: input.name
-                }
-            }
+                    name: input.name,
+                    status:Status.ACTIVE,
+                    family: {
+                        create: {
+                            name: input.name
+                        }
+                    }
+                },
+            },
         },
         select: {
             id: true,
-            name: true,
-            email: true
+            email: true,
+            familyMember: {
+                select: {
+                    id: true,
+                    name: true,
+                }
+            }
         }
     })
     return user;

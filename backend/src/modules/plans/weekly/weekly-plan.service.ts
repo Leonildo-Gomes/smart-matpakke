@@ -14,6 +14,7 @@ export async function createWeeklyPlanService(data: CreateWeeklyPlanInput, famil
                 create: data.dailyPlans.map((dailyPlan) => ({
                     dayOfWeek: dailyPlan.dayOfWeek,
                     recipeId: dailyPlan.recipeId,
+                    familyMemberId: dailyPlan.familyMemberId
                 })),
             },
         },
