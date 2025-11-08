@@ -1,13 +1,19 @@
 import { z } from 'zod';
 import { DayOfWeek, NutrientUnit } from '../../../generated/prisma/client';
+import { GeneratedPlanSchema } from './generated-plan.schema';
 
 export const generatePlanSchema = z.object({
-    userId: z.string().uuid(),
+    familyMemberId: z.string().uuid(),
     planType: z.enum(['DAILY', 'WEEKLY']),
     startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
 });
 
 export type generatePlanSchema = z.infer<typeof generatePlanSchema>;
+
+// Schema for the body of the save plan request
+export const SavePlanSchema = GeneratedPlanSchema.extend({
+  familyMemberId: z.string().uuid(),
+});
 
 
 
@@ -56,7 +62,7 @@ const DailyPlanResponseSchema = z.object({
 
 export const WeeklyPlanResponseSchema = z.object({
   id: z.string().uuid(),
-  startDate: z.date(),
+  startDate: z.string(),
   familyId: z.string().uuid(),
   dailyPlans: z.array(DailyPlanResponseSchema),
 });

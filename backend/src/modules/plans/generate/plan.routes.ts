@@ -1,19 +1,19 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import * as controller from './plan.controller';
-import { PlanOutputSchema } from './plan.output.schema';
-import { errorResponseSchema, generatePlanSchema, WeeklyPlanResponseSchema } from './plan.schema';
+import { errorResponseSchema, generatePlanSchema, SavePlanSchema, WeeklyPlanResponseSchema } from './plan.schema';
+
 export const planRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const typedApp = fastify.withTypeProvider<ZodTypeProvider>();
 
-  typedApp.post(
+  fastify.post(
     '/generate',{
       schema: {
         summary: 'Generate a plan',
         tags: ['generate'],
         body: generatePlanSchema,
         response: {
-          200: PlanOutputSchema, // Alterado para um array de PlanOutputSchema,
+          200: SavePlanSchema, // Alterado para um array de PlanOutputSchema,
           500: errorResponseSchema
         }
       },
@@ -21,14 +21,14 @@ export const planRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
     controller.generatePlan
   );
 
-  typedApp.post(
+  fastify.post(
     '/plans/save',
     {
-      preHandler: [typedApp.authenticate],
+      //preHandler: [typedApp.authenticate],
       schema: {
         summary: 'Saves a generated weekly plan',
         tags: ['plans'],
-        body: PlanOutputSchema,
+        body: SavePlanSchema,
         response: {
           201: WeeklyPlanResponseSchema,
           500: errorResponseSchema,

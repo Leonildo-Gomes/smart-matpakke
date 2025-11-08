@@ -14,11 +14,15 @@ import { recipeRoutes } from './modules/recipes/recipe.routes';
 import { userRoutes } from './modules/users/user.routes';
 import authPlugin from './plugins/auth';
 
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+
 const app=  Fastify({
     logger: true,
 }).withTypeProvider<ZodTypeProvider>();
-app.setValidatorCompiler(validatorCompiler);
-app.setSerializerCompiler(serializerCompiler);
+
+app.setValidatorCompiler(validatorCompiler); // uso do zod para validacao dos dado de entrada
+app.setSerializerCompiler(serializerCompiler); // uso do zod para serializacao dos dados de saida
 
 
 if (!process.env.JWT_SECRET) {
@@ -34,6 +38,29 @@ app.register(fastifyJwt, {
         expiresIn: '30d'
     }
 })
+
+ app.register(swagger, {
+    swagger: {
+        info:{
+            title: 'Smartmatpakke API',
+            description: 'Fastify API documentation',
+            version: '1.0.0'
+        }
+    },
+    //transform: jsonSchemaTransform,
+});
+
+ app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+        docExpansion: 'full',
+        deepLinking: false,
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+});
+
+
 // Middleware (hook) para verificar token
 app.register(authPlugin);
 
@@ -66,12 +93,5 @@ app.listen({ port:Number(process.env.PORT) || 3333,host: '0.0.0.0'})
     process.exit(1)
 })
 
-app.route({
-    method: 'GET',
-    url: '/',
-    handler: (request, reply) => {
-        return 'Hello World'
-    }
-})  
 
 

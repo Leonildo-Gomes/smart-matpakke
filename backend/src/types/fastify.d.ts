@@ -27,3 +27,11 @@ declare module 'jsonwebtoken' {
     email: string;
   }
 }
+
+/*export type FastifyTypedInstance = FastifyInstance<
+ RawServerDefault,
+ RawRequestDefaultExpression,
+ RawReplyDefaultExpression,
+ FastifyBaseLogger,
+ ZodTypeProvider
+>*/

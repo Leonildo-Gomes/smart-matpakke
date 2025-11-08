@@ -43,7 +43,7 @@ export function buildUserPrompt(context: PlanGenerationContext){
     
     
     promptParts.push(
-        `\nPor favor, retorna o plano de refeições e as receitas num formato JSON estrito, seguindo o seguinte schema:`,
+        `\nPor favor, retorna o plano de lanches e as receitas num formato JSON estrito, seguindo o seguinte schema:`,
         `'''json
 {
     planType: "DAILY" | "WEEKLY";

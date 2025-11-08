@@ -48,7 +48,7 @@ model FamilyMember{
   
   @@map("family_members")
   dailyPlans DailyPlan[]
-  familyMenberPreferences FamilyMemberPreference[]
+  familyMemberPreferences FamilyMemberPreference[]
   recipeFeedbacks RecipeFeedback[]
 }
 
@@ -68,7 +68,7 @@ model Preference {
   type  PreferenceType
   value String 
   @@map("preferences")
-  familyMenberPreferences FamilyMemberPreference[]
+  familyMemberPreferences FamilyMemberPreference[]
 }
 
 model FamilyMemberPreference {

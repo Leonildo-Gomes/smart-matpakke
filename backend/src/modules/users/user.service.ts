@@ -10,6 +10,15 @@ export async function getUserProfile(userId: string) {
         select: { // Select specific fields to return
             id: true,
             email: true,
+            familyMember: {
+                select: {
+                    id: true,
+                    name: true,
+                    dateOfBirth: true,
+                    gender: true,
+                    photoUrl: true,
+                },
+            },
            
         },
     });
@@ -47,6 +56,15 @@ export async function updateUserProfile(userId: string, data: UpdateUserProfileI
         select: {
             id: true,
             email: true,
+            familyMember: {
+                select: {
+                    id: true,
+                    name: true,
+                    dateOfBirth: true,
+                    gender: true,
+                    photoUrl: true,
+                },
+            },
         },
     });
     if (!user) {

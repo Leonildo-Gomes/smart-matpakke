@@ -15,8 +15,6 @@ const RecipeNutrientSchema = z.object({
   name: z.string().describe('Nome do nutriente (ex: "Calorias", "Proteínas").'),
   value: z.number().positive().describe('Valor do nutriente (ex: 250, 30).'),
   unit: z.string().describe('Unidade de medida do nutriente (ex: "kcal", "g").'),
-  //unit: z.enum(['kg', 'g', 'mg', 'kcal', 'ml', 'l', 'tsp', 'tbsp', 'unit']).describe('Unidade de medida do nutriente (ex: "kcal", "g").'),
-  //unit: z.enum(NutrientUnit).describe('Unidade de medida do nutriente (ex: "kcal", "g").'),
 });
 
 // Schema para uma Receita
@@ -37,7 +35,7 @@ const DailyPlanSchema = z.object({
 });
 
 // Schema para um Plano Semanal
-export const PlanOutputSchema = z.object({
+export const GeneratedPlanSchema = z.object({
   planType: z.enum(['DAILY', 'WEEKLY']).default('DAILY').describe('Tipo de plano: DIÁRIO ou SEMANAL.'),
   startDate: z.string(),//.regex(/^\\d{4}-\\d{2}-\\d{2}$/).describe('Data de início do plano semanal no formato YYYY-MM-DD.'),
   dailyPlans: z.array(DailyPlanSchema).min(1).max(7).describe('Lista de planos diários para a semana.'),
@@ -58,4 +56,4 @@ export const DailyPlanOutputSchema = z.object({
 
 
 
-export type PlanOutput = z.infer<typeof PlanOutputSchema>;
+export type GeneratedPlan = z.infer<typeof GeneratedPlanSchema>;
