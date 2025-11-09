@@ -4,11 +4,14 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 import * as controller from './family.controller';
 import { errorResponseSchema, familyResponseSchema, familySchema } from "./family.schema";
+import { memberRoutes } from "./members/members.routes";
 
 
 
 export async function familyRoutes(app: FastifyInstance) {
     const typedApp = app.withTypeProvider<ZodTypeProvider>(); 
+
+    app.register(memberRoutes);
 
     typedApp.post(
         '/families', {

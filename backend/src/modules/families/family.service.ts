@@ -10,6 +10,14 @@ export async function createFamilyService(data: FamilyInput) {
             select: {
                 id: true,
                 name: true,
+                familyMembers:{
+                    select: {
+                        id: true,
+                        name: true,
+                        dateOfBirth: true,
+                        gender: true,
+                    }
+                },
             },
 
         })
@@ -25,6 +33,14 @@ export async function getFamilyService(familyId: string) {
         select: {
             id: true,
             name: true,
+            familyMembers:{
+                select: {
+                    id: true,
+                    name: true,
+                    dateOfBirth: true,
+                    gender: true,
+                }
+            },
         },
     });
     return family;
@@ -35,6 +51,14 @@ export function getAllFamiliesService() {
         select: {
             id: true,
             name: true,
+            familyMembers:{
+                select: {
+                    id: true,
+                    name: true,
+                    dateOfBirth: true,
+                    gender: true,
+                }
+            },
         },
     });
 }
